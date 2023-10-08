@@ -1,25 +1,54 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
+using HMFix.Tools;
 using Screen = UnityEngine.Device.Screen;
 
 namespace HMFix
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    public class HMFix : BaseUnityPlugin
+    [BepInProcess("Harvest Moon The Winds of Anthos.exe")]
+    public partial class HMFix : BaseUnityPlugin
     {
+        private static ManualLogSource _log;
+        
         private void Awake()
         {
+            HMFix._log = Logger;
             // Plugin startup logic
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            HMFix._log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            // Reads or creates our config file.
+            InitConfig();
+            LoadGraphicsSettings(); // Initializes our graphics options
+            var createdFramelimiter = InitializeFramelimiter();
+            if (createdFramelimiter) {
+                _log.LogInfo("Created Framelimiter.");
+            }
+            else { _log.LogError("Couldn't create Framelimiter Actor."); }
             Harmony.CreateAndPatchAll(typeof(ResolutionPatches));
+        }
+        
+        private static bool InitializeFramelimiter()
+        {
+            var frObject = new GameObject {
+                name = "FramerateLimiter",
+                transform = {
+                    position = new Vector3(0, 0, 0),
+                    rotation = Quaternion.identity
+                }
+            };
+            DontDestroyOnLoad(frObject);
+            var frLimiterComponent = frObject.AddComponent<FramerateLimitManager>();
+            frLimiterComponent.fpsLimit = (double)Screen.currentResolution.refreshRate / _iFrameInterval.Value;
+            return true;
         }
 
         [HarmonyPatch]
         public class ResolutionPatches
         {
-            private const  float             OriginalAspectRatio            = 1.7777778f;
+            private const float OriginalAspectRatio = 1.7777778f;
             // Set screen match mode when object has canvas scaler enabled
             [HarmonyPatch(typeof(CanvasScaler), "OnEnable")]
             [HarmonyPostfix]
@@ -37,10 +66,12 @@ namespace HMFix
             public static bool CustomResolutionPatch()
             {
                 if (Screen.fullScreen) {
-                    Screen.SetResolution(3440, 1440, FullScreenMode.Windowed);
+                    Screen.SetResolution(_iHorizontalResolution.Value, _iVerticalResolution.Value, FullScreenMode.Windowed);
                     return false;
                 }
-                Screen.SetResolution(3440,1440, FullScreenMode.FullScreenWindow);
+                Screen.SetResolution(_iHorizontalResolution.Value, _iVerticalResolution.Value, FullScreenMode.FullScreenWindow);
+                Application.targetFrameRate = 0; // Disables any external framelimit from Unity. We will be using our own framerate limiting logic anyways.
+                QualitySettings.vSyncCount = HMFix._bvSync.Value ? 1 : 0;
                 return false;
             }
         }

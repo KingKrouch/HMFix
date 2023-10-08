@@ -62,7 +62,7 @@ public partial class HMFix
             _ => new Vector2(4096, 4096)
         };
     }
-
+    
     //private static string path = @"BepInEx\content\svsfix_content";
     //public static AssetBundle blackBarControllerBundle = AssetBundle.LoadFromFile(path);
 
@@ -91,7 +91,6 @@ public partial class HMFix
     public static ConfigEntry<bool> _bDisableSteamInput; // For those that don't want to use SteamInput, absolutely hate it being forced, and would rather use Unity's built-in input system.
         
     // Resolution Config
-    public static ConfigEntry<bool> _bForceCustomResolution;
     public static ConfigEntry<int> _iHorizontalResolution;
     public static ConfigEntry<int> _iVerticalResolution;
         
@@ -109,7 +108,7 @@ public partial class HMFix
             _sPostAAType = Config.Bind("Graphics", "Post-Process AA", "SMAA", "Off, FXAA, SMAA");
             if (!Enum.TryParse(_sPostAAType.Value, out _confPostAAType)) {
                 _confPostAAType = EPostAAType.SMAA;
-                HMFix._log.LogError($"PostAA Value is invalid. Defaulting to SMAA.");
+                Log.LogError($"PostAA Value is invalid. Defaulting to SMAA.");
             }
 
             _resolutionScale = Config.Bind("Graphics", "Resolution Scale", 100,
@@ -119,7 +118,7 @@ public partial class HMFix
                 "Low (512), Medium (1024), High (2048), Original (4096), Ultra (8192), Extreme (16384)");
             if (!Enum.TryParse(_sShadowQuality.Value, out _confShadowQuality)) {
                 _confShadowQuality = EShadowQuality.Original;
-                HMFix._log.LogError($"ShadowQuality Value is invalid. Defaulting to Original.");
+                Log.LogError($"ShadowQuality Value is invalid. Defaulting to Original.");
             }
 
             _shadowCascades = Config.Bind("Graphics", "Shadow Cascades", 4,
@@ -155,21 +154,19 @@ public partial class HMFix
             _sInputType = Config.Bind("Input", "Input Type", "Automatic", "Automatic, KBM, Controller");
             if (!Enum.TryParse(_sInputType.Value, out _confInputType)) {
                 _confInputType = EInputType.Automatic;
-                HMFix._log.LogError($"Input Type Value is invalid. Defaulting to Automatic.");
+                Log.LogError($"Input Type Value is invalid. Defaulting to Automatic.");
             }
             
             _sControllerType = Config.Bind("Input", "Controller Prompts Type", "Automatic", "Automatic, Xbox, PS3, PS4, PS5, Switch (If SteamInput is enabled, 'Automatic' will be used regardless of settings)");
             if (!Enum.TryParse(_sControllerType.Value, out _confControllerType)) {
                 _confControllerType = EControllerType.Automatic;
-                HMFix._log.LogError($"Controller Type Value is invalid. Defaulting to Automatic.");
+                Log.LogError($"Controller Type Value is invalid. Defaulting to Automatic.");
             }
             
             _bDisableSteamInput = Config.Bind("Input", "Force Disable SteamInput", false,
                 "Self Explanatory. Prevents SteamInput from ever running, forcefully, for those using DS4Windows/DualSenseX or wanting native controller support. Make sure to disable SteamInput in the controller section of the game's properties on Steam alongside this option.");
             
             // Resolution Config
-            _bForceCustomResolution = Config.Bind("Resolution", "Force Custom Resolution", false,
-                "Self Explanatory. A temporary toggle for custom resolutions until I can figure out how to go about removing the resolution count restrictions.");
             _iHorizontalResolution = Config.Bind("Resolution", "Horizontal Resolution", 1280);
             _iVerticalResolution = Config.Bind("Resolution", "Vertical Resolution", 720);
         }

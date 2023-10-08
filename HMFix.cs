@@ -12,21 +12,21 @@ namespace HMFix
     [BepInProcess("Harvest Moon The Winds of Anthos.exe")]
     public partial class HMFix : BaseUnityPlugin
     {
-        private static ManualLogSource _log;
+        private static ManualLogSource Log;
         
         private void Awake()
         {
-            HMFix._log = Logger;
+            Log = base.Logger;
             // Plugin startup logic
-            HMFix._log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
             // Reads or creates our config file.
             InitConfig();
             LoadGraphicsSettings(); // Initializes our graphics options
             var createdFramelimiter = InitializeFramelimiter();
             if (createdFramelimiter) {
-                _log.LogInfo("Created Framelimiter.");
+                Log.LogInfo("Created Framelimiter.");
             }
-            else { _log.LogError("Couldn't create Framelimiter Actor."); }
+            else { Log.LogError("Couldn't create Framelimiter Actor."); }
             Harmony.CreateAndPatchAll(typeof(ResolutionPatches));
         }
         
@@ -49,6 +49,7 @@ namespace HMFix
         public class ResolutionPatches
         {
             private const float OriginalAspectRatio = 1.7777778f;
+            
             // Set screen match mode when object has canvas scaler enabled
             [HarmonyPatch(typeof(CanvasScaler), "OnEnable")]
             [HarmonyPostfix]
@@ -66,10 +67,10 @@ namespace HMFix
             public static bool CustomResolutionPatch()
             {
                 if (Screen.fullScreen) {
-                    Screen.SetResolution(_iHorizontalResolution.Value, _iVerticalResolution.Value, FullScreenMode.Windowed);
+                    Screen.SetResolution(HMFix._iHorizontalResolution.Value, HMFix._iVerticalResolution.Value, FullScreenMode.Windowed);
                     return false;
                 }
-                Screen.SetResolution(_iHorizontalResolution.Value, _iVerticalResolution.Value, FullScreenMode.FullScreenWindow);
+                Screen.SetResolution(HMFix._iHorizontalResolution.Value, HMFix._iVerticalResolution.Value, FullScreenMode.FullScreenWindow);
                 Application.targetFrameRate = 0; // Disables any external framelimit from Unity. We will be using our own framerate limiting logic anyways.
                 QualitySettings.vSyncCount = HMFix._bvSync.Value ? 1 : 0;
                 return false;

@@ -1,0 +1,8 @@
+TODO:
+- Fix the blurred dialogue segments appearing stretched with the current display aspect ratio
+- Fix the internal resolution of the dialogue segments.
+- Expose the MSAA, supersampling, anisotropic filtering, and Post-Process Anti-Aliasing settings for the user to modify.
+- Possibly expose the other menus and things to keyboard and mouse inputs (I imagine they're storing this information somewhere within some Unity NewInput binding assets or something).
+- Fix the atrocious mouse control for the camera.
+
+Too early to say whether or not adding KB/M prompts will be possible.
